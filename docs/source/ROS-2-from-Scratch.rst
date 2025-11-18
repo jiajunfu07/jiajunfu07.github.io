@@ -6,3 +6,4 @@ ROS 2 from Scratch
    :glob:
 
    ROS2/Run-2-nodes-in-single-or-separate-docker-containers.rst
+   ROS2/Writing-and-Building-a-ROS2-Node.md
