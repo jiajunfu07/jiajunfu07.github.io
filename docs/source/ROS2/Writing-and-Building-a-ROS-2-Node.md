@@ -1,5 +1,21 @@
 # Writing and Building a ROS 2 Node
-
+**Table of Contents**
+- [Writing and Building a ROS 2 Node](#writing-and-building-a-ros-2-node)
+  - [Creating a workspace](#creating-a-workspace)
+    - [Building the workspce](#building-the-workspce)
+  - [Create a package](#create-a-package)
+    - [Python package](#python-package)
+    - [C++ package](#c-package)
+    - [Building a package](#building-a-package)
+  - [Create a Python node](#create-a-python-node)
+    - [Build the node](#build-the-node)
+  - [Creating a C++ node](#creating-a-c-node)
+    - [Building and running the node](#building-and-running-the-node)
+  - [Node template for Python and C++ nodes](#node-template-for-python-and-c-nodes)
+  - [Introspection](#introspection)
+    - [ros2 node command line](#ros2-node-command-line)
+    - [Changing the node name at runtime](#changing-the-node-name-at-runtime)
+  - [Summary](#summary)
 ## Creating a workspace
 When you make progress and start to work on several applications, the best practice is to name each workspace with the name of the application or robot. \
 For example, if you create a workspace for a robot named `ABC V3`, then you can name it `abc_v3_ws`\

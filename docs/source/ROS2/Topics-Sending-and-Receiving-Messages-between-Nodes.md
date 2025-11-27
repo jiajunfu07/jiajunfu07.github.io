@@ -1,7 +1,21 @@
 # Topics: Sending and Receiving Messages between Nodes
+**Table of Contents**
+- [Topics: Sending and Receiving Messages between Nodes](#topics-sending-and-receiving-messages-between-nodes)
+  - [What is a ROS 2 Topic?](#what-is-a-ros-2-topic)
+  - [Writing a Publisher Node](#writing-a-publisher-node)
+    - [Writing a Python Publisher](#writing-a-python-publisher)
+    - [Writing a C++ Publisher](#writing-a-c-publisher)
+  - [Writing a Subscriber Node](#writing-a-subscriber-node)
+    - [Writing a Python Subscriber](#writing-a-python-subscriber)
+    - [Writing a C++ Subscriber](#writing-a-c-subscriber)
+  - [Additional tools to handle topics](#additional-tools-to-handle-topics)
+    - [The ros2 topic command line tool](#the-ros2-topic-command-line-tool)
+  - [\[IMPORTANT\] Creating a custom interface for a topic](#important-creating-a-custom-interface-for-a-topic)
+    - [Using an existing interface in your node](#using-an-existing-interface-in-your-node)
+    - [Creating a new topic interface](#creating-a-new-topic-interface)
+    - [Using the custom interface in your nodes](#using-the-custom-interface-in-your-nodes)
 ## What is a ROS 2 Topic?
-This is what defines a topic: a name and an interface.
-
+This is what defines a topic: a name and an interface. \
 Here are some important points about how topics work:
 * A topic is defined by a **name** and an **interface (message type)**.
 * A topic name must start with a letter and can be followed by letters, numbers, underscores, and slashes.
@@ -421,7 +435,7 @@ ament_export_dependencies(rosidl_default_runtime)
 We have some rules for the new interface:
 * Use UpperCamelCase for the name. For example, HardwareStatus.
 * Don't write `Msg` or `Interface` in the name as this would add unnecessary redundancy.
-* Use .msg as the file extension.
+* **Use .msg as the file extension.**
 ```bash
 $ cd ~/ros2_ws/src/my_robot_interfaces/msg/
 $ touch HardwareStatus.msg
@@ -429,7 +443,7 @@ $ touch HardwareStatus.msg
 Inside this file, we can add the definition of the message:
 * Built-in types: `bool`, `byte`, `char`, `float32`, `float64`, `int8`, `int16`, `int32`, `int64`, `uint8`, `uint16`, `uint32`, `uint64`, `string`, As well as array of these types. You can find the complete list here: https://docs.ros.org/en/rolling/Concepts/Basic/About-Interfaces.html#field-types
 * Other existing message, using the name of the package, following by the name of the message. For exameple, `geometry_msgs/Twist`.
-```plaintext
+```text
 int64 version
 foat64 temperature
 bool are_motors_ready
