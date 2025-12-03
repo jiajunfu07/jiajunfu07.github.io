@@ -2,7 +2,7 @@
 **Table of Contents**
 - [Writing and Building a ROS 2 Node](#writing-and-building-a-ros-2-node)
   - [Creating a workspace](#creating-a-workspace)
-    - [Building the workspce](#building-the-workspce)
+    - [Building the workspace](#building-the-workspace)
   - [Create a package](#create-a-package)
     - [Python package](#python-package)
     - [C++ package](#c-package)
@@ -29,11 +29,11 @@ Then, enter the workspace and create a new directory named `src`
 $ cd ros2_ws/
 $ mkdir src
 ```
-### Building the workspce
+### Building the workspace
 Navigate to the workspace root directory, and run `colcon build` command. `colcon` is the build system in ROS2. It was installed by installing the `ros-dev-tools` packages.
 ```
 $ cd ~/ros2_ws/
-$ colon build
+$ colcon build
 Summary: 0 packages finished [0.73s]
 ```
 Currently, no packages were built, but we can see three new directories
@@ -104,10 +104,10 @@ $ ros2 pkg create my_cpp_pkg --build-type ament_cmake --dependencies rclcpp
 * `src` directory: This is where you will write your C++ nodes (.cpp files).
 
 ### Building a package
-To build the packages, go back to the root of your ROS 2 workspace and run `colon build`. \
+To build the packages, go back to the root of your ROS 2 workspace and run `colcon build`. \
 ```
 $ cd ~/ros2_ws/
-$ colon build
+$ colcon build
 Starting >>> my_cpp_pkg
 Starting >>> my_py_pkg
 Finished <<< my_py_pkg [1.60s]
@@ -116,9 +116,9 @@ Summary: 2 packages finished [3.72s]
 ```
 The important thing to notice is the line: `Finished <<< <package name> [time]`. This means that the package was correctly built. \
 After you build any package, you also have to source your workspace so that the environment is aware of the new changes. \
-To build only a spefific package, you can use the `--packages-select` option, followed by the name of the package.
+To build only a specific package, you can use the `--packages-select` option, followed by the name of the package.
 ```
-$ colon build --packages-select my_py_pkg
+$ colcon build --packages-select my_py_pkg
 ```
 
 ## Create a Python node
@@ -175,19 +175,20 @@ def main(args=None):
    rclpy.spin(node)
    rclpy.shutdown()
 ```
-In the `main()` function, we preform:
-1. Initialize ROS2 communication with `rclpy.init()`.
+In the `main()` function, we perform:
+1. Initialize ROS 2 communication with `rclpy.init()`.
 2. Create an object from the `MyCustomNode` class we wrote before.
-3. Make the node spin.
-4. To create the timer we use the `create_timer()` method form the `Node` class. We need to give two arguments: the rate at which we want to call the function(float number), and the callback function. Note that the callback function should be specified without any parenthesis.
-5. After the node is killed, shut down ROS 2 communications with `rclpy.shutdown()`.
+3. Make the node spin with `rclpy.spin()`.
+4. After the node is killed, shut down ROS 2 communications with `rclpy.shutdown()`.
+
+To create the timer, we use the `create_timer()` method from the `Node` class. We need to provide two arguments: the rate at which we want to call the function (float number in seconds), and the callback function. Note that the callback function should be specified without any parentheses.
 
 ```
 if __name__ == '__main__':
    main()
 ```
 The last one is a pure Python thing and has nothing to do with ROS2. It just means that if you run the Python script directly, the `main()` fuction will be called. \
-As the `MyCustonmNode` class inherits from the `Node` class, we get access to all the ROS 2 functionalities for nodes. For example, we get the `get_logger()` method from Node. Then, The `info()` method, we can print a log with info level.
+As the `MyCustomNode` class inherits from the `Node` class, we get access to all the ROS 2 functionalities for nodes. For example, we get the `get_logger()` method from Node, and with the `info()` method, we can print a log with info level.
 
 ### Build the node
 We can test the code just by running it in the terminal(`$ python3 my_first_node.py`). However, what we want to do is actually install the file in our workspace, so we can start the node with ros2 run, and later on, from a launch file. \
@@ -213,10 +214,14 @@ Here is the syntax
 $ cd ~/ros2_ws/
 $ colon build --packages-select my_py_pkg
 ```
-On top of --packages-select <pkg name>, you can add the --symlink-install option, so you won't have to build the package every time you modify your Python nodes; for example, `$ colon build --packages-select my_py_pkg --symlink-install`. This only works for Python packages.
+On top of --packages-select <pkg name>, you can add the --symlink-install option, so you won't have to build the package every time you modify your Python nodes; for example, `$ colcon build --packages-select my_py_pkg --symlink-install`. This only works for Python packages.
 
 ## Creating a C++ node
-```
+We first include `rclcpp`, the C++ library for ROS 2. This library contains the `rclcpp::Node` class.
+
+We create a class that inherits from the `Node` class. From this `Node` class, we will be able to access all the ROS 2 functionalities: logger, timer, and so on. As you can see, we also specify the node name in the constructor.
+
+```cpp
 #include "rclcpp/rclcpp.hpp"
 
 class MyCustomNode : public rclcpp::Node
@@ -233,12 +238,12 @@ public:
        RCLCPP_INFO(this->get_logger(), "Hello %d", counter_);
        counter_++;
    }
+
 private:
    int counter_;
    rclcpp::TimerBase::SharedPtr timer_;
 };
 
-
 int main(int argc, char **argv)
 {
    rclcpp::init(argc, argv);
@@ -248,42 +253,19 @@ int main(int argc, char **argv)
    return 0;
 }
 ```
-We first include `rclcpp`, the C++ library for ROS 2. This library contains the `rclcpp::Node` class. \
-We create a class that inherits from the `Node` class. From this `Node` class, we will be able to access all the ROS 2 functionalities: logger, timer, and so on. As you can see, we also specify the node name in the constructor.
-```
-#include "rclcpp/rclcpp.hpp"
-
-class MyCustomNode : public rclcpp::Node
-{
-public:
-   MyCustomNode() : Node("my_node_name"), counter_(0)
-   {
-   }
-private:
-};
-```
-In the `main()` function, we do exactly the same thing as for Python.
-1. Initialize ROS 2 comminications with `rclcpp::init()`
+In the `main()` function, we do exactly the same thing as for Python:
+1. Initialize ROS 2 communications with `rclcpp::init()`
 2. Create a node object from your newly written class. As you don't create an object directly, but a shared pointer to that object, you have to use `std::make_shared<>()` function. In ROS 2 and C++, almost everything you create will be a smart pointer (shared, unique, and so on).
 3. Make the node spin with `rclcpp::spin()`
 4. After the node is killed, shut down ROS 2 communications with `rclcpp::shutdown()`
-```
-int main(int argc, char **argv)
-{
-   rclcpp::init(argc, argv);
-   auto node = std::make_shared<MyCustomNode>();
-   rclcpp::spin(node);
-   rclcpp::shutdown();
-   return 0;
-}
-```
+
 As you can see, once again, the node is not the program itself. The node is just an object that we create in the `main()` function. This is a very important concept to understand when you start working with ROS 2 and C++. You can have multiple nodes in the same program, and you can also have multiple programs running at the same time, each with its own nodes.
-```
-    timer_ = this->create_wall_timer(std::chrono::seconds(1), std::bind(&MyCustomNode::print_hello, this));
-```
-For the timer, we have to create a class attribute. As you can see, we also create a shared pointer here: `rclcpp::TimerBase::SharedPtr timer_;`. \
-We use the `create_wall_timer()` method to create a timer. `this->` is not required, but I have added it to emphasize that we are using the `create_wall_timer()` method from the `Node` class. \
-The first argument is the rate at which we want to call the callback function, and the second argument is the callback function itself. We use `std::bind()` to bind the callback function to the class method.
+
+**Timer creation:**
+
+For the timer, we have to create a class attribute: `rclcpp::TimerBase::SharedPtr timer_;`
+
+We use the `create_wall_timer()` method to create a timer. The first argument is the interval at which we want to call the callback function (as a chrono duration), and the second argument is the callback function itself. We use `std::bind()` to bind the callback function to the class method.
 ### Building and running the node
 To build the C++ node, we need to add some lines to the `CMakeLists.txt` file of the package. First, we need to find the required packages with `find_package()`. Then, we need to add an executable for our node with `add_executable()`, and link it with the required libraries with `ament_target_dependencies()`.
 ```
@@ -306,7 +288,7 @@ To build a C++ node, we need to do three things in the `CMakeLists.txt` file:
 3. Finally, install the executable with the `install()` function. so that we can find it when we use `ros2 run`. Here, you have to provide the executable name and the destination path. The destination path should always be `lib/${PROJECT_NAME}`.
 ```
 $ cd ~/ros2_ws/
-$ colon build --packages-select my_cpp_pkg
+$ colcon build --packages-select my_cpp_pkg
 ```
 After building the package, don't forget to source the workspace again.
 ```
@@ -322,46 +304,51 @@ $ ros2 run my_cpp_pkg test_node
 ```
 
 ## Node template for Python and C++ nodes
-```
+**Python Node Template:**
+
+```python
 #!/usr/bin/env python3
 import rclpy
 from rclpy.node import Node
 
-class MyCustomNode(Node): # MODIFY NAME
-   def __init__(self):
-       super().__init__('node_name') # MODIFY NAME
-       # Your code here
+class MyCustomNode(Node):  # MODIFY NAME
+    def __init__(self):
+        super().__init__('node_name')  # MODIFY NAME
+        # Your code here
 
 def main(args=None):
     rclpy.init(args=args)
-    node = MyCustomNode() # MODIFY NAME
+    node = MyCustomNode()  # MODIFY NAME
     rclpy.spin(node)
     rclpy.shutdown()
 
 if __name__ == '__main__':
     main()
 ```
-```
+
+**C++ Node Template:**
+
+```cpp
 #include "rclcpp/rclcpp.hpp"
 
-class MyCustomNode : public rclcpp::Node // MODIFY NAME
+class MyCustomNode : public rclcpp::Node  // MODIFY NAME
 {
 public:
-   MyCustomNode() : Node("node_name") // MODIFY NAME
-   {
-       // Your code here
-   }
-};
+    MyCustomNode() : Node("node_name")  // MODIFY NAME
+    {
+        // Your code here
+    }
+
 private:
 };
 
 int main(int argc, char **argv)
 {
-   rclcpp::init(argc, argv);
-   auto node = std::make_shared<MyCustomNode>(); // MODIFY NAME
-   rclcpp::spin(node);
-   rclcpp::shutdown();
-   return 0;
+    rclcpp::init(argc, argv);
+    auto node = std::make_shared<MyCustomNode>();  // MODIFY NAME
+    rclcpp::spin(node);
+    rclcpp::shutdown();
+    return 0;
 }
 ```
 ## Introspection

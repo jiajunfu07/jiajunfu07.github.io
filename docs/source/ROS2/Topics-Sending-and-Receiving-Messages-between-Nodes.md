@@ -50,7 +50,7 @@ def main(args=None):
 if __name__ == '__main__':
     main()
 ```
-For the interface, you have two choices: use an existing interface or create a custon one. Let's use `example_interfaces/msg/Int64`. To get more details about this interface.
+For the interface, you have two choices: use an existing interface or create a custom one. Let's use `example_interfaces/msg/Int64`. To get more details about this interface:
 ```bash
 $ ros2 interface show example_interfaces/msg/Int64
 # Some commets
@@ -67,11 +67,12 @@ class NumberPublisher(Node):
         super().__init__('number_publisher')
         self.number_publisher_ = self.create_publisher(Int64, 'number', 10)
 ```
-To import the interface, we must specify the name of the package (`example_interfaces`), then the folder name for topic messages (`msg`), and finally the class for the interface (`Int64`). \
-To Create the publisher, we use the `create_publisher()` method from the `Node` class. Inherited from this class gives us access to all ROS 2 functionalities. This method requires three arguments:
-* Topic interface: We'll use `Int64` from the `example_interfaces` package.
-* Topic name: As defined previously, this is `number`.
-* Queue size: If the messages are pulished too fast and subscribers can't keep up. messages will be buffered so that they're not lost. This can be important if you send large messages(images) at a high frequency, on a lossy network.
+To import the interface, we must specify the name of the package (`example_interfaces`), then the folder name for topic messages (`msg`), and finally the class for the interface (`Int64`).
+
+To create the publisher, we use the `create_publisher()` method from the `Node` class. Inheriting from this class gives us access to all ROS 2 functionalities. This method requires three arguments:
+* **Topic interface**: We'll use `Int64` from the `example_interfaces` package.
+* **Topic name**: As defined previously, this is `number`.
+* **Queue size**: If the messages are published too fast and subscribers can't keep up, messages will be buffered so that they're not lost. This is particularly important if you send large messages (images) at a high frequency over a lossy network.
 ```python
 def __init__(self):
     super().__init__('number_publisher')
@@ -85,14 +86,14 @@ def publish_number(self):
     msg.data = self.number_
     self.number_publisher_.publish(msg)
 ```
-We create an object from the `Int64` class. This oject contains a `data` field. We publish the message using the `publish()` method from the publisher.
+We create an object from the `Int64` class. This object contains a `data` field. We publish the message using the `publish()` method from the publisher.
 
 Since we're using a new dependency (`example_interfaces`), we also need to add one line to the `package.xml` file inside the `my_py_pkg` package:
 ```xml
 <depend>rclpy</depend>
 <depend>example_interfaces</depend>
 ```
-To install the node, open the `setup.py` file inside the `my_py_pkg` package and add the following lines to the `entry_points` section:
+To register the node, open the `setup.py` file inside the `my_py_pkg` package and add the following lines to the `entry_points` section:
 ```python
 entry_points={
     'console_scripts': [
@@ -119,14 +120,14 @@ data: 2
 data: 2
 ...
 ```
-As you can see, there is an added leading slash(`/`) before the topic name. We only wrote `number` in the code, not `/number`. This is because ROS 2 names(nodes, topics, and so on) are organized inside namespaces. Later. we will see that you can add a namespace to put all your nodes and topics inside it. By default, all nodes and topics are inside the root namespace(`/`). We could call this the global namespace.
+As you can see, there is a leading slash (`/`) added before the topic name. We only wrote `number` in the code, not `/number`. This is because ROS 2 names (nodes, topics, and so on) are organized inside namespaces. Later, we will see that you can add a namespace to put all your nodes and topics inside it. By default, all nodes and topics are inside the root namespace (`/`), which we call the global namespace.
 
 ### Writing a C++ Publisher
 ```bash
 $ cd ~/ros2_ws/src/my_cpp_pkg/src
 $ touch number_publisher.cpp
 ```
-To include an interface for a topic. use `<package_name>/msg/<interface_name>.hpp>`.
+To include an interface for a topic, use `<package_name>/msg/<interface_name>.hpp>`.
 ```c++
 #include "rclcpp/rclcpp.hpp"
 #include "example_interfaces/msg/int64.hpp"
@@ -135,12 +136,13 @@ Then add the following in the constructor:
 ```c++
 number_publisher_ = this->create_publisher<example_interfaces::msg::Int64>("number", 10);
 ```
-In C++, we also use the `create_publisher()` method from the `Node` class, but the syntax is a bit different. We use the template syntax to specify the interface type. The rest of the arguments are the same as in Python. \
+In C++, we also use the `create_publisher()` method from the `Node` class, but the syntax is a bit different. We use the template syntax to specify the interface type. The rest of the arguments are the same as in Python.
+
 The publisher is also declared as a private attribute of the class:
 ```c++
 rclcpp::Publisher<example_interfaces::msg::Int64>::SharedPtr number_publisher_;
 ```
-As you can see, we use the `rclcpp::Publisher` class, and as for many things in ROS 2, we use a shared pointer. For several common classes, ROS 2 provides`::SharedPtr`, which would be the same thing as writing `std::shared_ptr<the publicher class>`.
+As you can see, we use the `rclcpp::Publisher` class, and like many things in ROS 2, we use a shared pointer. For several common classes, ROS 2 provides `::SharedPtr`, which is equivalent to writing `std::shared_ptr<the publisher class>`.
 ```c++
 void publish_number()
 {
@@ -154,9 +156,11 @@ As we did for Python, open the `package.xml` file inside the `my_cpp_pkg` packag
 <depend>rclcpp</depend>
 <depend>example_interfaces</depend>
 ```
-Open the `CMakeLists.txt` file inside the `my_cpp_pkg` package and add the following line to the `find_package()` section. \
-Then we create the executable `add_executable` and link the dependencies `ament_target_dependencies`. \
-Finally, there is not need to re-create the `install()` block if it already exists; just add the new line without any comma between the lines.
+Open the `CMakeLists.txt` file inside the `my_cpp_pkg` package and add the following lines to the `find_package()` section.
+
+Then we create the executable with `add_executable` and link the dependencies with `ament_target_dependencies`.
+
+Finally, there is no need to re-create the `install()` block if it already exists; just add the new executable to the existing block.
 ```CMake
 find_package(rclcpp REQUIRED)
 find_package(example_interfaces REQUIRED)
@@ -206,11 +210,11 @@ class NumberSubscriber(Node):
             10)
         self.get_logger().info('Number subscriber node has been started.')
 ```
-We create subscriber in the node's constructor. Here, we use the `create_subscription()` method from the `Node` class. This method requires four arguments:
-* Topic interface: `Int64` from the `example_interfaces` package. Same as the publisher.
-* Topic name: `number`. Same as the publisher.
-* Callback function: **Almost everything is a callback in ROS 2.** We use a callback method for the subscriber here as well. When the node is spinning, it will stay alive and all registered callbacks will be ready to be called.
-* Queue size: Same as the publisher.
+We create a subscriber in the node's constructor. Here, we use the `create_subscription()` method from the `Node` class. This method requires four arguments:
+* **Topic interface**: `Int64` from the `example_interfaces` package. Same as the publisher.
+* **Topic name**: `number`. Same as the publisher.
+* **Callback function**: In ROS 2, callbacks are fundamental. We use a callback method for the subscriber. When the node is spinning, it will stay alive and all registered callbacks will be ready to be called.
+* **Queue size**: Same as the publisher.
 
 For the callback methods, we usually use `callback_` prefix to make it clear that this method shouldn't be called directly in the code.
 
@@ -219,8 +223,9 @@ def callback_number(self, msg: Int64):
     self.counter_ += msg.data
     self.get_logger().info("Counter: " + str(self.counter_))
 ```
-In a subscriber callback method, we receive the message directly in the parameters of the function. Since we know that `Int64` has a `data` field, we can access it using `msg.data`.
-As a best practice, I have specified the `Int64` type for the `msg` parameter. This is not mandatory in Python, but it  adds an extra level of safety.
+In a subscriber callback method, we receive the message directly as a parameter of the function. Since we know that `Int64` has a `data` field, we can access it using `msg.data`.
+
+As a best practice, I have specified the `Int64` type for the `msg` parameter. This is not mandatory in Python, but it adds an extra level of safety.
 
 Add a new executable in the `setup.py` file inside the `my_py_pkg` package:
 ```python
@@ -288,8 +293,10 @@ int main(int argc, char **argv)
     return 0;
 }
 ```
-In C++, we find the same components as Python: topic interface, topic name, queue size, and callback function. The order of the arguments is a bit different. For `_1` to work, don't forget to include `using namespace std::placeholders;` at the beginning of the file. \
-The subscriber object is decalred as a private attribute of the class, using the `rclcpp::Subscription` class with a shared pointer. \
+In C++, we find the same components as Python: topic interface, topic name, queue size, and callback function. The order of the arguments is a bit different. For `_1` to work, don't forget to include `using namespace std::placeholders;` at the beginning of the file.
+
+The subscriber object is declared as a private attribute of the class, using the `rclcpp::Subscription` class with a shared pointer.
+
 We then have the callback method, which receives a shared pointer to the message. We access the `data` field using the arrow operator (`->`).
 
 Add a new executable in the `CMakeLists.txt` file inside the `my_cpp_pkg` package:
@@ -374,7 +381,7 @@ $ ros2 bag record /number -o bag1
 [INFO] [rosbag2_recorder]: Recording...
 [INFO] [rosbag2_recorder]: All request topic subscriptions are subscribed. Stopping discovery...
 ```
-Stop the recording using `Ctrl+C`. In the directory, you will find `.mcap` files that contain the recorded messages. and a YAML file with more information. If you open this YAML file, you will see the recoreded duration, number of messages, and topic thats were recorded. \
+Stop the recording using `Ctrl+C`. In the directory, you will find `.mcap` files that contain the recorded messages and a YAML file with more information. If you open this YAML file, you will see the recorded duration, number of messages, and topics that were recorded.
 You can then play back the bag file:
 ```bash
 $ ros2 bag play ~/bags/bag1
@@ -441,11 +448,11 @@ $ cd ~/ros2_ws/src/my_robot_interfaces/msg/
 $ touch HardwareStatus.msg
 ```
 Inside this file, we can add the definition of the message:
-* Built-in types: `bool`, `byte`, `char`, `float32`, `float64`, `int8`, `int16`, `int32`, `int64`, `uint8`, `uint16`, `uint32`, `uint64`, `string`, As well as array of these types. You can find the complete list here: https://docs.ros.org/en/rolling/Concepts/Basic/About-Interfaces.html#field-types
-* Other existing message, using the name of the package, following by the name of the message. For exameple, `geometry_msgs/Twist`.
+* **Built-in types**: `bool`, `byte`, `char`, `float32`, `float64`, `int8`, `int16`, `int32`, `int64`, `uint8`, `uint16`, `uint32`, `uint64`, `string`, as well as arrays of these types. You can find the complete list [here](https://docs.ros.org/en/rolling/Concepts/Basic/About-Interfaces.html#field-types).
+* **Other existing messages**: Use the package name, followed by the message name. For example, `geometry_msgs/Twist`.
 ```text
 int64 version
-foat64 temperature
+float64 temperature
 bool are_motors_ready
 string debug_message
 ```
@@ -468,7 +475,7 @@ You can see the interface from the command line:
 $ source install/setup.bash
 $ ros2 interface show my_robot_interfaces/msg/HardwareStatus
 int64 version
-foat64 temperature
+float64 temperature
 bool are_motors_ready
 string debug_message
 ```
@@ -478,16 +485,18 @@ Now, you can use this new interface in your publisher and subscriber nodes by im
 <depend>my_robot_interfaces</depend>
 ```
 For Python:
-1. Import the interface in Python 
-```Python
+1. Import the interface in Python
+
+```python
 from my_robot_interfaces.msg import HardwareStatus
 ```
 2. Create the publisher and specify the interface
 ```Python
 self.hardware_status_publisher_ = self.create_publisher(HardwareStatus, 'hardware_status', 10)
 ```
-3. Ceate the message, fill in the fields, and publish it
-```Python
+3. Create the message, fill in the fields, and publish it
+
+```python
 msg = HardwareStatus()
 msg.version = 1
 msg.temperature = 36.5
@@ -504,8 +513,9 @@ For C++:
 ```c++
 hardware_status_publisher_ = this->create_publisher<my_robot_interfaces::msg::HardwareStatus>("hardware_status", 10);
 ```
-3. Ceate the message, fill in the fields, and publish it
-```c++
+3. Create the message, fill in the fields, and publish it
+
+```cpp
 auto msg = my_robot_interfaces::msg::HardwareStatus();
 msg.version = 1;
 msg.temperature = 36.5;
